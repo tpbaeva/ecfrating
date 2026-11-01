@@ -1,5 +1,5 @@
-// Page logic: games are scored in order, each against the rating after the
-// previous games, and the per-game changes are summed.
+// Page logic: every game is scored against the same starting rating,
+// and the per-game updates are summed.
 
 const ownInput = document.getElementById('own-rating');
 const gamesList = document.getElementById('games');
@@ -39,32 +39,31 @@ function addGame() {
 
 function recalc() {
   const own = parseRating(ownInput);
-  const games = [];
-  const changeEls = [];
+  const updates = [];
   let points = 0;
+  let counted = 0;
 
   gamesList.querySelectorAll('.game').forEach((li, i) => {
     li.querySelector('.game-num').textContent = 'Game ' + (i + 1);
     const opp = parseRating(li.querySelector('.opp-rating'));
     const result = li.dataset.result === undefined ? null : Number(li.dataset.result);
     const changeEl = li.querySelector('.change');
-    changeEl.textContent = '–';
-    changeEl.className = 'change';
 
-    if (own === null || opp === null || result === null) return;
-    games.push([opp, result]);
-    changeEls.push(changeEl);
+    if (own === null || opp === null || result === null) {
+      changeEl.textContent = '–';
+      changeEl.className = 'change';
+      return;
+    }
+    const update = getUpdate(own, opp, result);
+    updates.push(update);
     points += result;
+    counted += 1;
+    changeEl.textContent = formatChange(update);
+    changeEl.className = 'change ' + (update > 0 ? 'up' : update < 0 ? 'down' : '');
   });
 
-  const counted = games.length;
   const ready = own !== null && counted > 0;
-  const { changes, total, k } =
-    monthUpdate(own, games, juniorToggle.checked, parseRating(gamesMonthInput));
-  changes.forEach((change, i) => {
-    changeEls[i].textContent = formatChange(change);
-    changeEls[i].className = 'change ' + (change > 0 ? 'up' : change < 0 ? 'down' : '');
-  });
+  const { total, k } = totalUpdate(updates, juniorToggle.checked, parseRating(gamesMonthInput));
   const kNote = k === 20 ? '' : ` (K=${roundTenth(k)})`;
   document.getElementById('score').textContent = ready ? `${points} / ${counted}` : '–';
   document.getElementById('total').textContent = ready ? formatChange(total) + kNote : '–';
