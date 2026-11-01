@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ECF Rating</title>
+  <meta name="description" content="Calculate your ECF rating change over one or more games.">
+  <meta name="theme-color" content="#1f5f4a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ECF Rating">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>ECF Rating</h1>
+
+    <section class="card">
+      <label for="own-rating">Your rating</label>
+      <input id="own-rating" type="number" inputmode="numeric" min="0" step="1" placeholder="e.g. 1500">
+      <label class="toggle">
+        <input id="junior" type="checkbox" role="switch" checked>
+        <span>Junior Rating</span>
+      </label>
+      <p class="hint">Under 18: K=40 if the entered games add up to a gain. This assumes the rest of the month goes the same way.</p>
+      <label for="games-month" class="spaced">Games this month <span class="optional">(optional)</span></label>
+      <input id="games-month" type="number" inputmode="numeric" min="1" step="1" placeholder="Number of games entered">
+      <p class="hint">All rated games played this month, including ones not entered here. Used to cap K.</p>
+    </section>
+
+    <section>
+      <h2>Games</h2>
+      <ol id="games" class="games"></ol>
+      <button id="add-game" type="button" class="add">+ Add game</button>
+    </section>
+
+    <section class="card summary" aria-live="polite">
+      <div><span>Score</span><strong id="score">–</strong></div>
+      <div><span>Total change</span><strong id="total">–</strong></div>
+      <div><span>New rating</span><strong id="new-rating">–</strong></div>
+    </section>
+  </main>
+
+  <template id="game-template">
+    <li class="game card">
+      <div class="game-head">
+        <span class="game-num"></span>
+        <span class="change">–</span>
+        <button type="button" class="remove" aria-label="Remove game">×</button>
+      </div>
+      <label>Opponent rating
+        <input class="opp-rating" type="number" inputmode="numeric" min="0" step="1" placeholder="e.g. 1600">
+      </label>
+      <div class="result" role="radiogroup" aria-label="Result">
+        <button type="button" data-result="1" role="radio" aria-checked="false">Win</button>
+        <button type="button" data-result="0.5" role="radio" aria-checked="false">Draw</button>
+        <button type="button" data-result="0" role="radio" aria-checked="false">Loss</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="ecf.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ECF Rating tests</title>
+  <style>
+    body { font: 15px/1.4 system-ui, sans-serif; margin: 16px; }
+    .pass { color: #1b7a3c; }
+    .fail { color: #b3261e; }
+  </style>
+</head>
+<body>
+  <h1>JS vs Python</h1>
+  <p id="summary"></p>
+  <pre id="failures"></pre>
+
+  <script src="../ecf.js"></script>
+  <script src="cases.js"></script>
+  <script>
+    const failures = [];
+    for (const [own, opp, result, expected] of CASES) {
+      const got = roundTenth(getUpdate(own, opp, result));
+      if (got !== expected) {
+        failures.push(`getUpdate(${own}, ${opp}, ${result}) = ${got}, expected ${expected}`);
+      }
+    }
+    const close = (a, b) => Math.abs(a - b) < 1e-6;
+    for (const [own, games, junior, month, total, k, rating] of TOTAL_CASES) {
+      const updates = games.map(([opp, result]) => getUpdate(own, opp, result));
+      const got = totalUpdate(updates, junior, month);
+      const gotRating = newRating(own, got.total);
+      if (!close(got.total, total) || !close(got.k, k) || !close(gotRating, rating)) {
+        failures.push(`own ${own}, ${games.length} games (month ${month}), junior ${junior}: ` +
+          `got total ${got.total} K ${got.k} rating ${gotRating}, ` +
+          `expected ${total} K ${k} rating ${rating}`);
+      }
+    }
+    const count = CASES.length + TOTAL_CASES.length;
+    const summary = document.getElementById('summary');
+    summary.textContent = failures.length
+      ? `${failures.length} of ${count} cases failed`
+      : `All ${count} cases passed`;
+    summary.className = failures.length ? 'fail' : 'pass';
+    document.getElementById('failures').textContent = failures.join('\n');
+  </script>
+</body>
+</html>
