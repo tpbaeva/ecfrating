@@ -7,6 +7,7 @@ Created on Thu May 14 15:40:31 2026
 """
 
 import csv
+import math
 from pathlib import Path
 
 DEFAULT_TABLE = Path(__file__).parent / 'ecf_table.csv'
@@ -39,13 +40,30 @@ def get_player_k(base_total, n_games, junior):
     return k
 
 
-def get_total_update(updates, junior, games_this_month=None):
-    # updates are per-game values at K=20 from get_update, all for one month;
-    # games_this_month (if given) is the player's full count for the K cap
-    base_total = sum(updates)
-    n_games = max(len(updates), games_this_month or 0)
-    k = get_player_k(base_total, n_games, junior)
-    return base_total * k / 20
+def get_game_changes(own_rating, games, k, table):
+    # games are (opponent_rating, result) in the order played; each game is
+    # scored against the rating after the previous games (rounded half up to
+    # a whole number for the table lookup), and its change is scaled by k
+    rating = own_rating
+    changes = []
+    for opponent_rating, result in games:
+        change = get_update(math.floor(rating + 0.5), opponent_rating, result,
+                            table) * k / 20
+        changes.append(change)
+        rating += change
+    return changes
+
+
+def get_month_update(own_rating, games, junior, table, games_this_month=None):
+    # games_this_month (if given) is the player's full count for the K cap;
+    # juniors get K=40 if the month comes out positive when played at K=40
+    n_games = max(len(games), games_this_month or 0)
+    k = get_player_k(1, n_games, junior)
+    changes = get_game_changes(own_rating, games, k, table)
+    if sum(changes) <= 0:
+        k = get_player_k(0, n_games, junior)
+        changes = get_game_changes(own_rating, games, k, table)
+    return changes, k
 
 
 def get_new_rating(old_rating, total_update):

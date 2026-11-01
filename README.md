@@ -3,8 +3,10 @@
 Web app to calculate an ECF rating update over one or more games.
 
 Enter your rating, add each game in the month (opponent rating and result),
-and see the change per game, the total change and your new rating. Every game
-is calculated from your starting rating and the changes are added up.
+and see the change per game, the total change and your new rating. Games are
+calculated in order: each game uses your rating after the previous games
+(including K, rounded to a whole number for the table), and the changes are
+added up.
 
 The calculation follows the ECF K rating algorithm:
 
@@ -15,8 +17,9 @@ The calculation follows the ECF K rating algorithm:
 - K is capped so that K x number of games never exceeds 700. The optional
   "Games this month" field gives the player's full count for this cap
   (otherwise the number of games entered is used).
-- The junior K=40 is decided from the games entered, assuming the rest of
-  the month goes the same way.
+- The junior K=40 is decided from the games entered (K=40 if they come out
+  positive when played at K=40), assuming the rest of the month goes the
+  same way.
 - The new rating is never below 100.
 
 Works on phone and desktop; it can be added to the home screen and used offline.

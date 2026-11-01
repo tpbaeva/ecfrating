@@ -69,13 +69,31 @@ function playerK(baseTotal, nGames, junior) {
   return k;
 }
 
-// updates are per-game values at K=20 from getUpdate, all for one month;
-// gamesThisMonth (if given) is the player's full count for the K cap.
-function totalUpdate(updates, junior, gamesThisMonth = null) {
-  const baseTotal = updates.reduce((a, b) => a + b, 0);
-  const nGames = Math.max(updates.length, gamesThisMonth || 0);
-  const k = playerK(baseTotal, nGames, junior);
-  return { total: baseTotal * k / 20, k };
+// games are [opponentRating, result] in the order played; each game is
+// scored against the rating after the previous games (rounded half up to
+// a whole number for the table lookup), and its change is scaled by k.
+function gameChanges(ownRating, games, k) {
+  let rating = ownRating;
+  return games.map(([opponentRating, result]) => {
+    const change = getUpdate(Math.floor(rating + 0.5), opponentRating, result) * k / 20;
+    rating += change;
+    return change;
+  });
+}
+
+const sum = (xs) => xs.reduce((a, b) => a + b, 0);
+
+// gamesThisMonth (if given) is the player's full count for the K cap;
+// juniors get K=40 if the month comes out positive when played at K=40.
+function monthUpdate(ownRating, games, junior, gamesThisMonth = null) {
+  const nGames = Math.max(games.length, gamesThisMonth || 0);
+  let k = playerK(1, nGames, junior);
+  let changes = gameChanges(ownRating, games, k);
+  if (sum(changes) <= 0) {
+    k = playerK(0, nGames, junior);
+    changes = gameChanges(ownRating, games, k);
+  }
+  return { changes, total: sum(changes), k };
 }
 
 function newRating(oldRating, total) {

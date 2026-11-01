@@ -26,11 +26,13 @@
       }
     }
     const close = (a, b) => Math.abs(a - b) < 1e-6;
-    for (const [own, games, junior, month, total, k, rating] of TOTAL_CASES) {
-      const updates = games.map(([opp, result]) => getUpdate(own, opp, result));
-      const got = totalUpdate(updates, junior, month);
+    for (const [own, games, junior, month, changes, total, k, rating] of TOTAL_CASES) {
+      const got = monthUpdate(own, games, junior, month);
       const gotRating = newRating(own, got.total);
-      if (!close(got.total, total) || !close(got.k, k) || !close(gotRating, rating)) {
+      const changesMatch = got.changes.length === changes.length &&
+        got.changes.every((c, i) => close(c, changes[i]));
+      if (!changesMatch || !close(got.total, total) || !close(got.k, k) ||
+          !close(gotRating, rating)) {
         failures.push(`own ${own}, ${games.length} games (month ${month}), junior ${junior}: ` +
           `got total ${got.total} K ${got.k} rating ${gotRating}, ` +
           `expected ${total} K ${k} rating ${rating}`);
