@@ -1,5 +1,5 @@
 {
-  "name": "ECF Rating",
+  "name": "Tim's ECF Rating Calculator",
   "short_name": "ECF Rating",
   "description": "Calculate your ECF rating change over one or more games.",
   "start_url": "./",
